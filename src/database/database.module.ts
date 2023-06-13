@@ -8,7 +8,9 @@ import { DataSource, DataSourceOptions } from 'typeorm';
             useValue: new DataSource({
                 type: 'postgres',
                 host: 'localhost',
-                port: 5432
+                port: 5432,
+                username: 'postgres',
+                password: 'pass123'
             }).initialize(),
         }
     ]
@@ -20,7 +22,13 @@ export class DatabaseModule {
             providers: [
                 {
                     provide: 'CONNECTION',
-                    useValue: new DataSource(options).initialize()
+                    useValue: new DataSource({
+                        type: 'postgres',
+                        host: 'localhost',
+                        port: 5432,
+                        username: 'postgres',
+                        password: 'pass123'
+                    }).initialize()
                 }
             ]
         }

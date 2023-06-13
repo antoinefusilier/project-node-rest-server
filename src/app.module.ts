@@ -1,44 +1,53 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { APP_PIPE, APP_FILTER } from '@nestjs/core';
 import { CoffeesController } from './coffees/coffees.controller';
 import { CoffeesService } from './coffees/coffees.service';
 import { CoffeesModule } from './coffees/coffees.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CoffeeRatingModule } from './coffee-rating/coffee-rating.module';
 import { DatabaseModule } from './database/database.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CommonModule } from './common/common.module';
 import * as Joi from '@hapi/joi';
 import appConfig from './config/app.config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      // envFilePath: ['.environment'],
-      // ignoreEnvFile: false,
-      // validationSchema: Joi.object({
-      //   DATABASE_HOST: Joi.required(),
-      //   DATABASE_PORT: Joi.number().default(5432),
-      //   DATABASE_PASSWORD: Joi.string().default('pass123')
-      // })
-      load: [appConfig]
-    }),
-    CoffeesModule, 
     TypeOrmModule.forRootAsync({
-      useFactory: () => ({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
          type: 'postgres',
-        host: process.env.DATABASE_HOST,
-        port: +process.env.DATABASE_PORT,
-        username: process.env.DATABASE_USER,
-        password: process.env.DATABASE_PASSWORD,
-        database: process.env.DATABASE_NAME,
+        host: configService.get("DATABASE_HOST"),
+        port: +configService.get("DATABASE_PORT"),
+        username: configService.get("DATABASE_USER"),
+        password: configService.get<string>("DATABASE_PASSWORD"),
+        database: configService.get("DATABASE_NAME"),
         autoLoadEntities: true,
         synchronize: true
       })
      
-    }), CoffeeRatingModule, DatabaseModule
+    }),
+    ConfigModule.forRoot({
+      load: [appConfig]
+    }),
+    CoffeesModule, 
+    CoffeeRatingModule, 
+    DatabaseModule, CommonModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService
+  ],
 })
-export class AppModule {}
+export class AppModule {
+
+  constructor(configService: ConfigService){
+    console.log("DB PWD",configService.get("DATABASE_USER"))
+    console.log("DB PWD",configService.get("DATABASE_PASSWORD"))
+    console.log("DB PWD",typeof(configService.get("DATABASE_PASSWORD")))
+
+  }
+}

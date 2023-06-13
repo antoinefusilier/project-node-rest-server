@@ -8,8 +8,8 @@ import { DatabaseModule } from 'src/database/database.module';
     DatabaseModule.register({
       type: 'postgres',
       host: 'localhost',
-      username: process.env.DATABASE_USE,
-      password: process.env.DATABASE_PASSWORD
+      username: process.env.DATABASE_USER,
+      password: String(process.env.DATABASE_PASSWORD)
     }) 
     ,CoffeesModule],
   providers: [CoffeeRatingService]
